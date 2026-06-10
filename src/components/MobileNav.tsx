@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Hop as Home, Grid3x2 as Grid3X3, ShoppingCart, ClipboardList, User, LayoutDashboard, Package, Settings } from 'lucide-react';
+import { Hop as Home, Grid3x2 as Grid3X3, ShoppingCart, ClipboardList, User } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 
 export default function MobileNav() {
