@@ -92,6 +92,100 @@ export async function fetchRelatedItems(itemId: string, categoryId: string, limi
   return (data as (ItemRow & { categories: { name: string } | null })[]).map(transformItem);
 }
 
+/* ========== Admin Items ========== */
+
+export async function adminFetchAllItems(): Promise<FoodItem[]> {
+  const { data, error } = await supabase
+    .from('items')
+    .select('*, categories(name)')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data as (ItemRow & { categories: { name: string } | null })[]).map(transformItem);
+}
+
+export async function createItem(params: {
+  name: string; description: string; price: number; costPrice: number;
+  categoryId: string; owner: Owner; deliveryTime: string;
+  isFeatured: boolean; isAvailable: boolean; imageUrl?: string;
+  createdBy: string;
+}): Promise<void> {
+  const slug = params.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now();
+  const { error } = await supabase.from('items').insert({
+    name: params.name,
+    slug,
+    description: params.description,
+    price: params.price,
+    cost_price: params.costPrice,
+    category_id: params.categoryId,
+    owner: params.owner,
+    delivery_time: params.deliveryTime,
+    is_featured: params.isFeatured,
+    is_available: params.isAvailable,
+    image_url: params.imageUrl || null,
+    created_by: params.createdBy,
+  });
+  if (error) throw error;
+}
+
+export async function updateItem(id: string, params: {
+  name?: string; description?: string; price?: number; costPrice?: number;
+  categoryId?: string; owner?: Owner; deliveryTime?: string;
+  isFeatured?: boolean; isAvailable?: boolean; imageUrl?: string;
+}): Promise<void> {
+  const updates: Record<string, unknown> = {};
+  if (params.name !== undefined) updates.name = params.name;
+  if (params.description !== undefined) updates.description = params.description;
+  if (params.price !== undefined) updates.price = params.price;
+  if (params.costPrice !== undefined) updates.cost_price = params.costPrice;
+  if (params.categoryId !== undefined) updates.category_id = params.categoryId;
+  if (params.owner !== undefined) updates.owner = params.owner;
+  if (params.deliveryTime !== undefined) updates.delivery_time = params.deliveryTime;
+  if (params.isFeatured !== undefined) updates.is_featured = params.isFeatured;
+  if (params.isAvailable !== undefined) updates.is_available = params.isAvailable;
+  if (params.imageUrl !== undefined) updates.image_url = params.imageUrl;
+  const { error } = await supabase.from('items').update(updates).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteItem(id: string): Promise<void> {
+  const { error } = await supabase.from('items').delete().eq('id', id);
+  if (error) throw error;
+}
+
+/* ========== Admin Categories ========== */
+
+export async function createCategory(params: {
+  name: string; description?: string; displayOrder: number; imageUrl?: string;
+}): Promise<void> {
+  const slug = params.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const { error } = await supabase.from('categories').insert({
+    name: params.name,
+    slug,
+    description: params.description || null,
+    display_order: params.displayOrder,
+    image_url: params.imageUrl || null,
+    is_active: true,
+  });
+  if (error) throw error;
+}
+
+export async function updateCategory(id: string, params: {
+  name?: string; description?: string; displayOrder?: number; imageUrl?: string;
+}): Promise<void> {
+  const updates: Record<string, unknown> = {};
+  if (params.name !== undefined) updates.name = params.name;
+  if (params.description !== undefined) updates.description = params.description;
+  if (params.displayOrder !== undefined) updates.display_order = params.displayOrder;
+  if (params.imageUrl !== undefined) updates.image_url = params.imageUrl;
+  const { error } = await supabase.from('categories').update(updates).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  const { error } = await supabase.from('categories').delete().eq('id', id);
+  if (error) throw error;
+}
+
 /* ========== Banners ========== */
 
 export async function fetchBanners(): Promise<Banner[]> {
@@ -348,6 +442,22 @@ export async function fetchPaymentDetails(): Promise<AdminPaymentDetails | null>
   return transformPayment(data as AdminPaymentRow);
 }
 
+export async function savePaymentDetails(params: {
+  accountName: string; accountNumber: string; bankName: string; bankCode?: string;
+}): Promise<void> {
+  // Deactivate all existing
+  await supabase.from('admin_payment_details').update({ is_active: false }).eq('is_active', true);
+  // Insert new active one
+  const { error } = await supabase.from('admin_payment_details').insert({
+    account_name: params.accountName,
+    account_number: params.accountNumber,
+    bank_name: params.bankName,
+    bank_code: params.bankCode || null,
+    is_active: true,
+  });
+  if (error) throw error;
+}
+
 export async function updatePaymentDetails(id: string, updates: Partial<AdminPaymentRow>) {
   const { error } = await supabase
     .from('admin_payment_details')
@@ -414,11 +524,17 @@ export async function uploadImage(bucket: string, path: string, file: File) {
 
 /* ========== Analytics ========== */
 
-export async function fetchAnalytics(date: string) {
+export async function fetchOrderAnalytics(startDate: string, endDate: string) {
   const { data, error } = await supabase
-    .from('analytics_snapshots')
-    .select('*')
-    .eq('snapshot_date', date);
-  if (error) return [];
-  return data;
+    .from('orders')
+    .select(`
+      id, total_amount, created_at, status,
+      order_items(item_name, item_price, quantity, owner,
+        items(category_id, categories(name)))
+    `)
+    .gte('created_at', startDate)
+    .lte('created_at', endDate)
+    .in('status', ['confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered']);
+  if (error) throw error;
+  return data || [];
 }
