@@ -1,13 +1,19 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Hop as Home, Grid3x2 as Grid3X3, ShoppingCart, ClipboardList, User } from 'lucide-react';
+import { Hop as Home, Grid3x2 as Grid3X3, ShoppingCart, ClipboardList, User, LayoutDashboard, Package, Settings } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 
 export default function MobileNav() {
   const location = useLocation();
   const cartCount = useStore(s => s.cartCount);
   const categories = useStore(s => s.categories);
+  const user = useStore(s => s.user);
   const count = cartCount();
+  const isAdmin = user?.role?.startsWith('admin') ?? false;
+  const isAdminPage = location.pathname.startsWith('/admin');
   const categoryPath = categories.length > 0 ? `/category/${categories[0].slug}` : '/';
+
+  // Hide on admin pages
+  if (isAdminPage) return null;
 
   const tabs = [
     { icon: Home, label: 'Home', path: '/' },
@@ -24,16 +30,11 @@ export default function MobileNav() {
         {tabs.map(tab => {
           const isActive = location.pathname === tab.path;
           return (
-            <Link
-              key={tab.path}
-              to={tab.path}
-              className="flex flex-col items-center gap-1 py-2 px-3 relative"
-            >
+            <Link key={tab.path} to={tab.path}
+              className="flex flex-col items-center gap-1 py-2 px-3 relative">
               <div className="relative">
-                <tab.icon
-                  size={20}
-                  style={{ color: isActive ? 'var(--primary)' : 'var(--text-muted)' }}
-                />
+                <tab.icon size={20}
+                  style={{ color: isActive ? 'var(--primary)' : 'var(--text-muted)' }} />
                 {tab.label === 'Cart' && count > 0 && (
                   <span className="absolute -top-2 -right-2.5 min-w-[16px] h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white px-1"
                     style={{ background: 'var(--primary)' }}>
@@ -41,7 +42,8 @@ export default function MobileNav() {
                   </span>
                 )}
               </div>
-              <span className="text-[10px] font-medium" style={{ color: isActive ? 'var(--primary)' : 'var(--text-muted)' }}>
+              <span className="text-[10px] font-medium"
+                style={{ color: isActive ? 'var(--primary)' : 'var(--text-muted)' }}>
                 {tab.label}
               </span>
             </Link>
