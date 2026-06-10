@@ -38,7 +38,7 @@ export default function AdminBanners() {
       <div className="space-y-3">
         {bannersList.map(b => (
           <div key={b.id} className="card p-4 flex items-center gap-4">
-            <img src={b.mediaUrl} alt={b.title} className="w-24 h-16 rounded-lg object-cover flex-shrink-0" />
+            <img src={b?.mediaUrl} alt={b.title} className="w-24 h-16 rounded-lg object-cover flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <h4 className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>{b.title}</h4>
               <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{b.subtitle}</p>
