@@ -8,7 +8,6 @@ export default function MobileNav() {
   const categories = useStore(s => s.categories);
   const user = useStore(s => s.user);
   const count = cartCount();
-  const isAdmin = user?.role?.startsWith('admin') ?? false;
   const isAdminPage = location.pathname.startsWith('/admin');
   const categoryPath = categories.length > 0 ? `/category/${categories[0].slug}` : '/';
 
