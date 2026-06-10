@@ -8,30 +8,36 @@ interface Props {
   maxSizeMB?: number;
 }
 
-export async function compressImage(file: File): Promise<{ blob: Blob; previewUrl: string }> {
+export async function compressImage(file: File, targetKB = 80): Promise<{ blob: Blob; previewUrl: string }> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.onload = () => {
+    img.onload = async () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d')!;
-      const maxWidth = 1200;
+      const maxWidth = 900;
       const scale = Math.min(1, maxWidth / img.width);
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) { reject(new Error('Canvas to Blob failed')); return; }
-          const url = URL.createObjectURL(blob);
-          resolve({ blob, previewUrl: url });
-        },
-        'image/webp',
-        0.8
-      );
+
+      let quality = 0.75;
+      let blob: Blob | null = null;
+
+      while (quality >= 0.3) {
+        blob = await new Promise<Blob | null>(res =>
+          canvas.toBlob(res, 'image/webp', quality)
+        );
+        if (!blob) break;
+        if (blob.size <= targetKB * 1024) break;
+        quality -= 0.1;
+      }
+
+      if (!blob) { reject(new Error('Compression failed')); return; }
+      const url = URL.createObjectURL(blob);
+      resolve({ blob, previewUrl: url });
     };
     img.onerror = () => reject(new Error('Failed to load image'));
-    const url = URL.createObjectURL(file);
-    img.src = url;
+    img.src = URL.createObjectURL(file);
   });
 }
 
@@ -39,6 +45,7 @@ export default function ImageUploader({ onImageSelect, accept = 'image/*', maxSi
   const [preview, setPreview] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [sizeInfo, setSizeInfo] = useState<string | null>(null);
   const addToast = useStore(s => s.addToast);
 
   const handleFile = useCallback(async (file: File) => {
@@ -51,14 +58,17 @@ export default function ImageUploader({ onImageSelect, accept = 'image/*', maxSi
       return;
     }
     setIsCompressing(true);
+    setSizeInfo(null);
     try {
       const localPreview = URL.createObjectURL(file);
       setPreview(localPreview);
       const { blob, previewUrl } = await compressImage(file);
+      const kb = Math.round(blob.size / 1024);
+      setSizeInfo(`${kb}KB`);
       const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' });
       onImageSelect(compressedFile, previewUrl);
-      addToast('success', 'Image compressed and ready');
-    } catch (err) {
+      addToast('success', `Image ready — ${kb}KB`);
+    } catch {
       addToast('error', 'Failed to process image');
     } finally {
       setIsCompressing(false);
@@ -83,11 +93,16 @@ export default function ImageUploader({ onImageSelect, accept = 'image/*', maxSi
         <div className="relative rounded-xl overflow-hidden aspect-video">
           <img src={preview} alt="Preview" className="w-full h-full object-cover" />
           <button
-            onClick={() => setPreview(null)}
+            onClick={() => { setPreview(null); setSizeInfo(null); }}
             className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
           >
             <X size={16} />
           </button>
+          {sizeInfo && !isCompressing && (
+            <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/60 text-green-400">
+              {sizeInfo}
+            </span>
+          )}
           {isCompressing && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               <div className="flex items-center gap-2 text-white">
@@ -113,7 +128,7 @@ export default function ImageUploader({ onImageSelect, accept = 'image/*', maxSi
             {isDragging ? 'Drop image here' : 'Click or drag image here'}
           </p>
           <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
-            Max {maxSizeMB}MB. Auto-compressed to WebP.
+            Auto-compressed to WebP under 80KB
           </p>
           <input type="file" accept={accept} onChange={onChange} className="hidden" />
         </label>
