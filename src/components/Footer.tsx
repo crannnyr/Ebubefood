@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Phone, Mail, MapPin, Instagram, Facebook, Twitter } from 'lucide-react';
+import { useStore } from '@/store/useStore';
 
 const SITE = {
   contactPhone: '08031234567',
@@ -11,8 +12,13 @@ const SITE = {
 };
 
 export default function Footer() {
+  const location = useLocation();
+  const user = useStore(s => s.user);
   const ss = SITE;
-  
+
+  // Hide on admin pages or when logged in
+  if (user || location.pathname.startsWith('/admin')) return null;
+
   return (
     <footer className="mt-auto" style={{ background: 'var(--surface-elevated)' }}>
       <div className="max-w-[1400px] mx-auto px-4 py-12">
