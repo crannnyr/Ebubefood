@@ -250,3 +250,9 @@ export function adPeriodLabel(p: string): string {
     default: return p;
   }
 }
+export function formatCurrency(amount: number): string {
+  return '₦' + amount.toLocaleString('en-NG', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+}
