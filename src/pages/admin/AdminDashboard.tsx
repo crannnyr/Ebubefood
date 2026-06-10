@@ -11,7 +11,7 @@ export default function AdminDashboard() {
 
   const stats = [
     { label: "Today's Orders", value: todayOrders.length.toString(), change: '+12%', up: true, icon: ShoppingBag, color: '#FF6B35' },
-    { label: "Revenue", value: `N${todayRevenue.toLocaleString()}`, change: '+8%', up: true, icon: DollarSign, color: '#00D26A' },
+    { label: "Revenue", value: `₦${todayRevenue.toLocaleString()}`, change: '+8%', up: true, icon: DollarSign, color: '#00D26A' },
     { label: "Pending Orders", value: pendingCount.toString(), change: '-3', up: false, icon: Clock, color: '#FFA502' },
     { label: "Active Ads", value: ads.filter(a => a.status === 'active').length.toString(), change: '0', up: true, icon: Megaphone, color: '#3B82F6' },
   ];
@@ -61,8 +61,11 @@ export default function AdminDashboard() {
             <LineChart data={salesData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="day" stroke="var(--text-muted)" fontSize={12} />
-              <YAxis stroke="var(--text-muted)" fontSize={12} tickFormatter={v => `N${(v/1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8 }} />
+              <YAxis stroke="var(--text-muted)" fontSize={12} tickFormatter={v => `₦${(v/1000).toFixed(0)}k`} />
+              <Tooltip
+                contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8 }}
+                formatter={(v: number) => [`₦${v.toLocaleString()}`, 'Sales']}
+              />
               <Line type="monotone" dataKey="sales" stroke="#FF6B35" strokeWidth={2} dot={{ fill: '#FF6B35', r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
@@ -73,7 +76,8 @@ export default function AdminDashboard() {
           <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Sales by Owner</h3>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
-              <Pie data={ownerData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+              <Pie data={ownerData} cx="50%" cy="50%" outerRadius={80} dataKey="value"
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                 {ownerData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
               <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8 }} />
@@ -87,13 +91,15 @@ export default function AdminDashboard() {
         <div className="card p-4">
           <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Recent Orders</h3>
           <div className="space-y-2">
-            {orders.slice(0, 5).map(o => (
+            {orders.length === 0 ? (
+              <p className="text-sm text-center py-6" style={{ color: 'var(--text-muted)' }}>No orders yet</p>
+            ) : orders.slice(0, 5).map(o => (
               <div key={o.id} className="flex items-center gap-3 p-3 rounded-lg" style={{ background: 'var(--surface)' }}>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{o.orderNumber}</p>
                   <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{o.userName} &middot; {o.items.length} items</p>
                 </div>
-                <span className="font-mono text-sm" style={{ color: 'var(--primary)' }}>N{o.total.toLocaleString()}</span>
+                <span className="font-mono text-sm" style={{ color: 'var(--primary)' }}>₦{o.total.toLocaleString()}</span>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.status === 'delivered' ? 'status-delivered' : 'status-preparing'}`}>
                   {o.status}
                 </span>
