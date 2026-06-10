@@ -23,6 +23,27 @@ export default function Navbar() {
   }, [location.pathname]);
 
   const isAdmin = user?.role?.startsWith('admin') ?? false;
+  const isAdminPage = location.pathname.startsWith('/admin');
+
+  const mobileLinks = isAdmin && isAdminPage ? [
+    { label: 'Dashboard', path: '/admin' },
+    { label: 'Items', path: '/admin/items' },
+    { label: 'Categories', path: '/admin/categories' },
+    { label: 'Banners', path: '/admin/banners' },
+    { label: 'Orders', path: '/admin/orders' },
+    { label: 'Ads Review', path: '/admin/ads' },
+    { label: 'EOD', path: '/admin/eod' },
+    { label: 'Analytics', path: '/admin/analytics' },
+    { label: 'Settings', path: '/admin/settings' },
+    { label: '← Back to Site', path: '/' },
+  ] : [
+    { label: 'Home', path: '/' },
+    { label: 'Menu', path: '/#menu' },
+    { label: 'My Orders', path: '/orders' },
+    { label: 'Profile', path: '/profile' },
+    { label: 'Advertise', path: '/ads' },
+    ...(isAdmin ? [{ label: 'Admin Dashboard', path: '/admin' }] : []),
+  ];
 
   return (
     <>
@@ -51,13 +72,20 @@ export default function Navbar() {
 
           {/* Center - Desktop Nav */}
           <div className="hidden md:flex items-center gap-1">
-            {[
+            {(isAdmin && isAdminPage ? [
+              { label: 'Dashboard', path: '/admin' },
+              { label: 'Items', path: '/admin/items' },
+              { label: 'Categories', path: '/admin/categories' },
+              { label: 'Orders', path: '/admin/orders' },
+              { label: 'EOD', path: '/admin/eod' },
+              { label: 'Settings', path: '/admin/settings' },
+            ] : [
               { label: 'Home', path: '/' },
               { label: 'Menu', path: '/#menu' },
               { label: 'Orders', path: '/orders' },
               { label: 'Profile', path: '/profile' },
               ...(isAdmin ? [{ label: 'Admin', path: '/admin' }] : []),
-            ].map(link => (
+            ]).map(link => (
               <Link
                 key={link.path}
                 to={link.path}
@@ -75,37 +103,62 @@ export default function Navbar() {
 
           {/* Right */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSearchOpen(!searchOpen)}
-              className="p-2 rounded-lg hover:bg-white/5 transition-colors"
-            >
-              <Search size={18} style={{ color: 'var(--text-secondary)' }} />
-            </button>
-            <button
-              onClick={toggleCart}
-              className="relative p-2 rounded-lg hover:bg-white/5 transition-colors"
-            >
-              <ShoppingCart size={18} style={{ color: 'var(--text-secondary)' }} />
-              {count > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white"
-                  style={{ background: 'var(--primary)' }}>
-                  {count}
-                </span>
-              )}
-            </button>
+            {!isAdminPage && (
+              <>
+                <button
+                  onClick={() => setSearchOpen(!searchOpen)}
+                  className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+                >
+                  <Search size={18} style={{ color: 'var(--text-secondary)' }} />
+                </button>
+                <button
+                  onClick={toggleCart}
+                  className="relative p-2 rounded-lg hover:bg-white/5 transition-colors"
+                >
+                  <ShoppingCart size={18} style={{ color: 'var(--text-secondary)' }} />
+                  {count > 0 && (
+                    <span
+                      className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white"
+                      style={{ background: 'var(--primary)' }}
+                    >
+                      {count}
+                    </span>
+                  )}
+                </button>
+              </>
+            )}
             {user ? (
               <div className="hidden md:flex items-center gap-2">
-                <Link to="/profile" className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors">
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                    style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors"
+                >
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                    style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}
+                  >
                     {user.fullName?.[0] || 'U'}
                   </div>
-                  <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{user.fullName?.split(' ')[0]}</span>
+                  <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    {user.fullName?.split(' ')[0]}
+                  </span>
                 </Link>
+                {isAdminPage && (
+                  <button
+                    onClick={logout}
+                    className="px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-white/5 transition-colors"
+                    style={{ color: 'var(--danger)' }}
+                  >
+                    Sign Out
+                  </button>
+                )}
               </div>
             ) : (
-              <Link to="/login" className="hidden md:flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                style={{ color: 'var(--primary)' }}>
+              <Link
+                to="/login"
+                className="hidden md:flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                style={{ color: 'var(--primary)' }}
+              >
                 <User size={16} />
                 Sign In
               </Link>
@@ -115,12 +168,18 @@ export default function Navbar() {
       </nav>
 
       {/* Search overlay */}
-      {searchOpen && (
-        <div className="fixed inset-0 z-[60] glass flex items-start justify-center pt-24 animate-fade-in"
-          onClick={() => setSearchOpen(false)}>
+      {searchOpen && !isAdminPage && (
+        <div
+          className="fixed inset-0 z-[60] glass flex items-start justify-center pt-24 animate-fade-in"
+          onClick={() => setSearchOpen(false)}
+        >
           <div className="w-full max-w-xl mx-4" onClick={e => e.stopPropagation()}>
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2" size={18} style={{ color: 'var(--text-muted)' }} />
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2"
+                size={18}
+                style={{ color: 'var(--text-muted)' }}
+              />
               <input
                 type="text"
                 placeholder="Search for food, categories..."
@@ -136,21 +195,31 @@ export default function Navbar() {
 
       {/* Mobile menu overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-40 glass md:hidden animate-fade-in" onClick={() => setIsOpen(false)}>
+        <div
+          className="fixed inset-0 z-40 glass md:hidden animate-fade-in"
+          onClick={() => setIsOpen(false)}
+        >
           <div className="pt-20 px-6 flex flex-col gap-2" onClick={e => e.stopPropagation()}>
-            {[
-              { label: 'Home', path: '/' },
-              { label: 'Menu', path: '/#menu' },
-              { label: 'My Orders', path: '/orders' },
-              { label: 'Profile', path: '/profile' },
-              { label: 'Advertise', path: '/ads' },
-              ...(isAdmin ? [{ label: 'Admin Dashboard', path: '/admin' }] : []),
-            ].map(link => (
+            {isAdminPage && (
+              <p className="text-xs font-semibold uppercase tracking-widest px-4 mb-2"
+                style={{ color: 'var(--text-muted)' }}>
+                Admin Menu
+              </p>
+            )}
+            {mobileLinks.map(link => (
               <Link
                 key={link.path}
                 to={link.path}
-                className="px-4 py-3 rounded-lg text-base font-medium hover:bg-white/5 transition-colors"
-                style={{ color: 'var(--text-primary)' }}
+                className={`px-4 py-3 rounded-lg text-base font-medium hover:bg-white/5 transition-colors ${
+                  location.pathname === link.path ? 'bg-white/10' : ''
+                }`}
+                style={{
+                  color: location.pathname === link.path
+                    ? 'var(--primary)'
+                    : link.label.startsWith('←')
+                    ? 'var(--text-muted)'
+                    : 'var(--text-primary)'
+                }}
                 onClick={() => setIsOpen(false)}
               >
                 {link.label}
@@ -159,13 +228,17 @@ export default function Navbar() {
             {user ? (
               <button
                 onClick={() => { logout(); setIsOpen(false); }}
-                className="px-4 py-3 rounded-lg text-base font-medium text-left hover:bg-white/5 transition-colors"
+                className="px-4 py-3 rounded-lg text-base font-medium text-left hover:bg-white/5 transition-colors mt-2"
                 style={{ color: 'var(--danger)' }}
               >
                 Sign Out
               </button>
             ) : (
-              <Link to="/login" className="btn-primary text-center mt-4" onClick={() => setIsOpen(false)}>
+              <Link
+                to="/login"
+                className="btn-primary text-center mt-4"
+                onClick={() => setIsOpen(false)}
+              >
                 Sign In
               </Link>
             )}
