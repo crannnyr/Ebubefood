@@ -22,10 +22,12 @@ interface AppState {
   paymentDetails: AdminPaymentDetails | null;
   ads: AdSubmission[];
   dayClosings: DayClosing[];
+  siteSettings: Record<string, string>;
   isDataLoading: boolean;
   loadData: () => Promise<void>;
   loadAds: () => Promise<void>;
   loadDayClosings: () => Promise<void>;
+  loadSiteSettings: () => Promise<void>;
 
   // Cart
   cartItems: CartItem[];
@@ -131,19 +133,21 @@ export const useStore = create<AppState>((set, get) => ({
   paymentDetails: null,
   ads: [],
   dayClosings: [],
+  siteSettings: {},
   isDataLoading: true,
 
   loadData: async () => {
     set({ isDataLoading: true });
     try {
-      const [categories, items, featuredItems, banners, paymentDetails] = await Promise.all([
+      const [categories, items, featuredItems, banners, paymentDetails, siteSettings] = await Promise.all([
         api.fetchCategories().catch(() => []),
         api.fetchItems().catch(() => []),
         api.fetchFeaturedItems().catch(() => []),
         api.fetchBanners().catch(() => []),
         api.fetchPaymentDetails().catch(() => null),
+        api.fetchSiteSettings().catch(() => ({})),
       ]);
-      set({ categories, items, featuredItems, banners, paymentDetails, isDataLoading: false });
+      set({ categories, items, featuredItems, banners, paymentDetails, siteSettings, isDataLoading: false });
     } catch {
       set({ isDataLoading: false });
     }
@@ -160,6 +164,13 @@ export const useStore = create<AppState>((set, get) => ({
     try {
       const dayClosings = await api.fetchDayClosings();
       set({ dayClosings });
+    } catch { /* keep existing */ }
+  },
+
+  loadSiteSettings: async () => {
+    try {
+      const siteSettings = await api.fetchSiteSettings();
+      set({ siteSettings });
     } catch { /* keep existing */ }
   },
 
