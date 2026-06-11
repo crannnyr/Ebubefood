@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Calendar, ShoppingBag, CheckCircle, XCircle,
+  Calendar, CheckCircle, XCircle,
   ChevronRight, LayoutDashboard,
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
