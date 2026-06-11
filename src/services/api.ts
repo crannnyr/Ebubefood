@@ -538,3 +538,30 @@ export async function fetchOrderAnalytics(startDate: string, endDate: string) {
   if (error) throw error;
   return data || [];
 }
+/* ========== Site Settings ========== */
+
+export async function fetchSiteSettings(): Promise<Record<string, string>> {
+  const { data, error } = await supabase
+    .from('site_settings')
+    .select('key, value');
+  if (error) return {};
+  return Object.fromEntries((data || []).map(r => [r.key, r.value]));
+}
+
+export async function updateSiteSetting(key: string, value: string): Promise<void> {
+  const { error } = await supabase
+    .from('site_settings')
+    .upsert({ key, value, updated_at: new Date().toISOString() });
+  if (error) throw error;
+}
+
+/* ========== Support Contacts ========== */
+
+export async function fetchSupportContact() {
+  const { data } = await supabase
+    .from('support_contacts')
+    .select('*')
+    .eq('is_active', true)
+    .single();
+  return data;
+}
