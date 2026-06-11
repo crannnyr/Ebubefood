@@ -26,11 +26,6 @@ import ProfileEditPage from '@/pages/ProfileEditPage';
 import WalletPage from '@/pages/WalletPage';
 import WalletFundPage from '@/pages/WalletFundPage';
 import WalletHistoryPage from '@/pages/WalletHistoryPage';
-import WalletMethodsPage from '@/pages/WalletMethodsPage';
-import AddressesPage from '@/pages/AddressesPage';
-import FavouritesPage from '@/pages/FavouritesPage';
-import ReviewsPage from '@/pages/ReviewsPage';
-import ReferralPage from '@/pages/ReferralPage';
 
 // Admin pages
 import AdminDashboard from '@/pages/admin/AdminDashboard';
@@ -42,13 +37,6 @@ import AdminOrders from '@/pages/admin/AdminOrders';
 import AdminEOD from '@/pages/admin/AdminEOD';
 import AdminAnalytics from '@/pages/admin/AdminAnalytics';
 import AdminSettings from '@/pages/admin/AdminSettings';
-import AdminPaymentsPage from '@/pages/admin/AdminPaymentsPage';
-import AdminZonesPage from '@/pages/admin/AdminZonesPage';
-import AdminUsersPage from '@/pages/admin/AdminUsersPage';
-import AdminEmailsPage from '@/pages/admin/AdminEmailsPage';
-import AdminWaitlistPage from '@/pages/admin/AdminWaitlistPage';
-import AdminRefundsPage from '@/pages/admin/AdminRefundsPage';
-import AdminSupportPage from '@/pages/admin/AdminSupportPage';
 
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AdminRoute from '@/components/AdminRoute';
@@ -92,11 +80,6 @@ export default function App() {
               <Route path="/wallet" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
               <Route path="/wallet/fund" element={<ProtectedRoute><WalletFundPage /></ProtectedRoute>} />
               <Route path="/wallet/history" element={<ProtectedRoute><WalletHistoryPage /></ProtectedRoute>} />
-              <Route path="/wallet/methods" element={<ProtectedRoute><WalletMethodsPage /></ProtectedRoute>} />
-              <Route path="/addresses" element={<ProtectedRoute><AddressesPage /></ProtectedRoute>} />
-              <Route path="/favourites" element={<ProtectedRoute><FavouritesPage /></ProtectedRoute>} />
-              <Route path="/reviews" element={<ProtectedRoute><ReviewsPage /></ProtectedRoute>} />
-              <Route path="/referral" element={<ProtectedRoute><ReferralPage /></ProtectedRoute>} />
 
               {/* Admin */}
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
@@ -108,13 +91,6 @@ export default function App() {
               <Route path="/admin/eod" element={<AdminRoute><AdminEOD /></AdminRoute>} />
               <Route path="/admin/analytics" element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
               <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
-              <Route path="/admin/payments" element={<AdminRoute><AdminPaymentsPage /></AdminRoute>} />
-              <Route path="/admin/zones" element={<AdminRoute><AdminZonesPage /></AdminRoute>} />
-              <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
-              <Route path="/admin/emails" element={<AdminRoute><AdminEmailsPage /></AdminRoute>} />
-              <Route path="/admin/waitlist" element={<AdminRoute><AdminWaitlistPage /></AdminRoute>} />
-              <Route path="/admin/refunds" element={<AdminRoute><AdminRefundsPage /></AdminRoute>} />
-              <Route path="/admin/support" element={<AdminRoute><AdminSupportPage /></AdminRoute>} />
             </Routes>
           </main>
           <Footer />
