@@ -2,41 +2,69 @@ import { Settings, Bell, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
 
-export default function ProfileHeader() {
-  const { user }    = useStore();
-  const navigate    = useNavigate();
-  const name        = user?.fullName ?? 'Guest';
-  const avatarUrl   = (user as any)?.avatar ?? '';
-  const memberTier  = (user as any)?.memberTier ?? 'Gold Member';
+/* Derive initials from full name e.g. "Amara Obi" → "AO" */
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join('');
+}
 
-  const getGreeting = () => {
+/* Deterministic bg colour from name so it's always the same per user */
+const AVATAR_COLORS = ['#f97316','#a855f7','#22c55e','#60a5fa','#ec4899','#fbbf24'];
+function avatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+export default function ProfileHeader() {
+  const { user }   = useStore();
+  const navigate   = useNavigate();
+  const name       = user?.fullName ?? 'Guest';
+  const avatarUrl  = (user as any)?.avatar_url ?? (user as any)?.avatar ?? '';
+  const memberTier = (user as any)?.memberTier ?? 'Gold Member';
+  const initials   = getInitials(name);
+  const bgColor    = avatarColor(name);
+
+  const greeting = (() => {
     const h = new Date().getHours();
     if (h < 12) return 'Good morning,';
     if (h < 17) return 'Good afternoon,';
     return 'Good evening,';
-  };
+  })();
 
   return (
     <div className="px-4 pt-5 pb-2">
       <div className="max-w-[1400px] mx-auto flex items-start justify-between">
 
-        {/* Avatar + name */}
+        {/* ── Avatar + name ── */}
         <div className="flex items-center gap-4">
           <div className="relative">
+
             {/* Glow ring */}
             <div
-              className="w-16 h-16 rounded-full p-0.5"
+              className="w-16 h-16 rounded-full p-0.5 flex-shrink-0"
               style={{ background: 'linear-gradient(135deg, #f97316 0%, #fbbf24 100%)' }}
             >
-              <img
-                src={avatarUrl}
-                alt={name}
-                className="w-full h-full rounded-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src =
-                    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop&crop=face';
-                }}
-              />
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={name}
+                  className="w-full h-full rounded-full object-cover"
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
+              ) : (
+                /* Initials fallback */
+                <div
+                  className="w-full h-full rounded-full flex items-center justify-center font-bold text-lg text-white"
+                  style={{ background: bgColor }}
+                >
+                  {initials}
+                </div>
+              )}
             </div>
 
             {/* Edit pencil */}
@@ -59,13 +87,13 @@ export default function ProfileHeader() {
           {/* Greeting + tier badge */}
           <div>
             <p className="text-sm" style={{ color: 'var(--text-muted, #6b7280)' }}>
-              {getGreeting()}
+              {greeting}
             </p>
             <h1
               className="text-2xl font-bold flex items-center gap-2"
               style={{ color: 'var(--text-primary, #ffffff)' }}
             >
-              {name} <span className="text-xl">👋</span>
+              {name.split(' ')[0]} <span className="text-xl">👋</span>
             </h1>
             <div
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mt-2"
@@ -82,7 +110,7 @@ export default function ProfileHeader() {
           </div>
         </div>
 
-        {/* Settings + notifications */}
+        {/* ── Settings + notifications ── */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/settings')}
