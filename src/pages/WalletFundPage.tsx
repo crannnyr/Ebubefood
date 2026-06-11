@@ -41,7 +41,6 @@ export default function WalletFundPage() {
   const [bank,    setBank]    = useState<BankDetails | null>(null);
   const [proof,   setProof]   = useState<File | null>(null);
   const [bankRef, setBankRef] = useState('');
-  const [fundReqId, setFundReqId] = useState<string | null>(null);
 
   /* Load bank details + pre-fill retry amount */
   useEffect(() => {
@@ -82,14 +81,13 @@ export default function WalletFundPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Could not initialise payment');
 
-      setFundReqId(json.funding_request_id);
       setStep('input');
 
       /* Open Paystack popup */
       const handler = (window as any).PaystackPop.setup({
         key:         import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
         access_code: json.access_code,
-        callback: async (response: { reference: string }) => {
+        callback: async (_response: { reference: string }) => {
           /* Webhook handles credit; we just poll for confirmation */
           setStep('processing');
           let attempts = 0;
@@ -156,12 +154,10 @@ export default function WalletFundPage() {
           .update({ ...payload, retry_count: supabase.rpc as any, last_retry_at: new Date().toISOString() })
           .eq('id', retryId);
         dbErr = error;
-        setFundReqId(retryId);
       } else {
-        const { data, error } = await supabase.from('wallet_funding_requests')
+        const { error } = await supabase.from('wallet_funding_requests')
           .insert(payload).select('id').single();
         dbErr = error;
-        if (data) setFundReqId(data.id);
       }
 
       if (dbErr) throw new Error('Could not submit request. Please try again.');
