@@ -6,28 +6,21 @@
 
 @layer base {
   :root {
-    /* ── CBK Foods — Midnight Feast Theme ───────────────────── */
     --primary:          #FF6B35;
     --primary-hover:    #E85A2B;
     --primary-light:    rgba(255, 107, 53, 0.15);
-
     --secondary:        #1A1A2E;
     --surface:          #16213E;
     --surface-hover:    #1E2A4A;
     --surface-elevated: #0F3460;
-
-    /* bg-primary makes all components that use var(--bg-primary) work correctly */
     --bg-primary:       var(--secondary);
     --bg-secondary:     var(--surface);
     --bg-elevated:      var(--surface-elevated);
-
     --accent:           #FFD700;
     --accent-light:     rgba(255, 215, 0, 0.1);
-
     --text-primary:     #F5F5F5;
     --text-secondary:   #A0A0B8;
     --text-muted:       #6B6B8A;
-
     --success:          #00D26A;
     --success-light:    rgba(0, 210, 106, 0.15);
     --danger:           #FF4757;
@@ -36,28 +29,55 @@
     --warning-light:    rgba(255, 165, 2, 0.15);
     --info:             #3B82F6;
     --info-light:       rgba(59, 130, 246, 0.15);
-
     --owner-bundu:      #8B5CF6;
     --owner-joint:      #FF6B35;
-
     --border:           rgba(255, 255, 255, 0.08);
     --border-hover:     rgba(255, 255, 255, 0.15);
     --glass:            rgba(22, 33, 62, 0.85);
-
-    --shadow-sm:        0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-md:        0 4px 20px rgba(0, 0, 0, 0.4);
-    --shadow-lg:        0 8px 40px rgba(0, 0, 0, 0.5);
+    --shadow-sm:        0 2px 8px rgba(0,0,0,0.3);
+    --shadow-md:        0 4px 20px rgba(0,0,0,0.4);
+    --shadow-lg:        0 8px 40px rgba(0,0,0,0.5);
     --shadow-glow:      0 0 20px rgba(255, 107, 53, 0.3);
-
     --radius:           0.75rem;
     --radius-sm:        0.5rem;
     --radius-lg:        1rem;
     --radius-full:      9999px;
   }
 
-  * {
-    border-color: var(--border);
+  /* ── Light Mode ───────────────────────────────────────────── */
+  [data-theme="light"] {
+    --secondary:        #F0F2FA;
+    --surface:          #FFFFFF;
+    --surface-hover:    #F5F6FF;
+    --surface-elevated: #E2E6F5;
+    --bg-primary:       #F0F2FA;
+    --bg-secondary:     #FFFFFF;
+    --bg-elevated:      #E2E6F5;
+    --text-primary:     #1A1A2E;
+    --text-secondary:   #4A4A6A;
+    --text-muted:       #8888AA;
+    --border:           rgba(0, 0, 0, 0.08);
+    --border-hover:     rgba(0, 0, 0, 0.15);
+    --glass:            rgba(240, 242, 250, 0.90);
+    --shadow-sm:        0 2px 8px  rgba(0,0,0,0.06);
+    --shadow-md:        0 4px 20px rgba(0,0,0,0.10);
+    --shadow-lg:        0 8px 40px rgba(0,0,0,0.14);
   }
+
+  [data-theme="light"] .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(0,0,0,0.04) 25%,
+      rgba(0,0,0,0.09) 50%,
+      rgba(0,0,0,0.04) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  * { border-color: var(--border); }
+
+  html { transition: background-color 0.25s ease; }
 
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -65,6 +85,7 @@
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -72,12 +93,8 @@
     color: var(--text-primary);
   }
 
-  /* Prevent iOS zoom on input focus */
-  input, textarea, select {
-    font-size: 16px;
-  }
+  input, textarea, select { font-size: 16px; }
 
-  /* Scrollbars */
   ::-webkit-scrollbar        { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track  { background: var(--bg-primary); }
   ::-webkit-scrollbar-thumb  { background: var(--surface-elevated); border-radius: var(--radius-full); }
@@ -85,12 +102,8 @@
 }
 
 @layer components {
+  .font-mono { font-family: 'Space Mono', monospace; }
 
-  .font-mono {
-    font-family: 'Space Mono', monospace;
-  }
-
-  /* ── Buttons ─────────────────────────────────────────────── */
   .btn-primary {
     @apply px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200;
     background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
@@ -101,11 +114,7 @@
     transform: translateY(-1px);
   }
   .btn-primary:active  { transform: translateY(0); }
-  .btn-primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
   .btn-secondary {
     @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200;
@@ -118,7 +127,6 @@
     border-color: var(--border-hover);
   }
 
-  /* ── Cards ───────────────────────────────────────────────── */
   .card {
     @apply rounded-xl transition-all duration-200;
     background: var(--surface);
@@ -126,14 +134,12 @@
   }
   .card:hover { border-color: var(--border-hover); }
 
-  /* ── Glass ───────────────────────────────────────────────── */
   .glass {
     background: var(--glass);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
 
-  /* ── Inputs ──────────────────────────────────────────────── */
   .input-field {
     @apply w-full px-4 py-3 rounded-lg outline-none transition-all duration-200;
     background: var(--surface);
@@ -146,7 +152,6 @@
   }
   .input-field::placeholder { color: var(--text-muted); }
 
-  /* ── Skeleton ────────────────────────────────────────────── */
   .skeleton-shimmer {
     background: linear-gradient(
       90deg,
@@ -158,7 +163,6 @@
     animation: shimmer 1.5s infinite;
   }
 
-  /* ── Gradient text ───────────────────────────────────────── */
   .text-gradient {
     background: linear-gradient(135deg, #FF6B35 0%, #FFD700 100%);
     -webkit-background-clip: text;
@@ -166,7 +170,6 @@
     background-clip: text;
   }
 
-  /* ── Owner badges ────────────────────────────────────────── */
   .owner-badge-ebube {
     @apply px-2 py-0.5 rounded-full text-xs font-medium;
     background: rgba(255, 107, 53, 0.15);
@@ -183,7 +186,6 @@
     color: var(--owner-joint);
   }
 
-  /* ── Order status chips ──────────────────────────────────── */
   .status-pending          { background: var(--warning-light);  color: var(--warning);  }
   .status-confirmed        { background: var(--info-light);     color: var(--info);     }
   .status-preparing        { background: var(--primary-light);  color: var(--primary);  }
@@ -192,17 +194,15 @@
   .status-delivered        { background: var(--success-light);  color: var(--success);  }
   .status-cancelled        { background: var(--danger-light);   color: var(--danger);   }
 
-  /* ── Safe-area bottom padding for mobile nav ─────────────── */
-  .pb-safe {
-    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
-  }
+  .pb-safe { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
 
-  /* ── Hide scrollbar utility ──────────────────────────────── */
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  /* ── Rolling Logo ─────────────────────────────────────────── */
+  .logo-rolling {
+    animation: logo-roll 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
 }
 
 /* ── Keyframes ───────────────────────────────────────────────── */
@@ -211,8 +211,13 @@
   100% { background-position: -200% 0; }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes logo-roll {
+  0%   { transform: translateX(0)    rotate(0deg);   }
+  45%  { transform: translateX(48px) rotate(360deg); }
+  55%  { transform: translateX(48px) rotate(360deg); }
+  100% { transform: translateX(0)    rotate(0deg);   }
 }
 
 @keyframes pulse-glow {
