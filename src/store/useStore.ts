@@ -14,6 +14,10 @@ interface AppState {
   setUser: (user: Profile | null) => void;
   initAuth: () => void;
 
+  // Theme
+  theme: 'dark' | 'light';
+  toggleTheme: () => void;
+
   // Data
   categories: Category[];
   items: FoodItem[];
@@ -125,6 +129,15 @@ export const useStore = create<AppState>((set, get) => ({
     set({ user, isAdmin: user?.role?.startsWith('admin') ?? false });
   },
 
+  // Theme
+  theme: (localStorage.getItem('cbk-theme') as 'dark' | 'light') || 'dark',
+  toggleTheme: () => {
+    const next = get().theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('cbk-theme', next);
+    document.documentElement.setAttribute('data-theme', next);
+    set({ theme: next });
+  },
+
   // Data
   categories: [],
   items: [],
@@ -200,10 +213,8 @@ export const useStore = create<AppState>((set, get) => ({
         }],
       });
     }
-
     const user = get().user;
     if (user) api.addToCartDb(user.userId, item.id, qty).catch(() => {});
-
     get().addToast('success', `Added ${item.name} to cart`);
   },
 
@@ -212,23 +223,12 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   updateQuantity: (itemId, qty) => {
-    if (qty < 1) {
-      get().removeFromCart(itemId);
-      return;
-    }
-    set({
-      cartItems: get().cartItems.map(c =>
-        c.itemId === itemId ? { ...c, quantity: qty } : c
-      ),
-    });
+    if (qty < 1) { get().removeFromCart(itemId); return; }
+    set({ cartItems: get().cartItems.map(c => c.itemId === itemId ? { ...c, quantity: qty } : c) });
   },
 
   setInstructions: (itemId, text) => {
-    set({
-      cartItems: get().cartItems.map(c =>
-        c.itemId === itemId ? { ...c, specialInstructions: text } : c
-      ),
-    });
+    set({ cartItems: get().cartItems.map(c => c.itemId === itemId ? { ...c, specialInstructions: text } : c) });
   },
 
   toggleCart: () => set(state => ({ isCartOpen: !state.isCartOpen })),
@@ -238,20 +238,13 @@ export const useStore = create<AppState>((set, get) => ({
     if (user) api.clearCartDb(user.userId).catch(() => {});
     set({ cartItems: [] });
   },
-
-  cartTotal: () => {
-    return get().cartItems.reduce((sum, c) => sum + c.price * c.quantity, 0);
-  },
-
-  cartCount: () => {
-    return get().cartItems.reduce((sum, c) => sum + c.quantity, 0);
-  },
+  cartTotal: () => get().cartItems.reduce((sum, c) => sum + c.price * c.quantity, 0),
+  cartCount: () => get().cartItems.reduce((sum, c) => sum + c.quantity, 0),
 
   // Orders
   orders: [],
   setOrders: (orders) => set({ orders }),
   addOrder: (order) => set(state => ({ orders: [order, ...state.orders] })),
-
   loadOrders: async () => {
     const user = get().user;
     if (!user) return;
