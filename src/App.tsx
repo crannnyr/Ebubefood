@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import MobileNav from '@/components/MobileNav';
 import CartDrawer from '@/components/CartDrawer';
 import Toast from '@/components/Toast';
+import LoadingScreen from '@/components/LoadingScreen';
 
 // Public pages
 import HomePage from '@/pages/HomePage';
@@ -56,11 +57,16 @@ import AdminRoute from '@/components/AdminRoute';
 function AppInitializer({ children }: { children: React.ReactNode }) {
   const initAuth = useStore(s => s.initAuth);
   const loadData = useStore(s => s.loadData);
+  const isAuthLoading = useStore(s => s.isAuthLoading);
+  const theme = useStore(s => s.theme);
 
   useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
     initAuth();
     loadData();
-  }, [initAuth, loadData]);
+  }, []);
+
+  if (isAuthLoading) return <LoadingScreen />;
 
   return <>{children}</>;
 }
@@ -69,7 +75,7 @@ export default function App() {
   return (
     <HashRouter>
       <AppInitializer>
-        <div className="min-h-[100dvh] flex flex-col" style={{ background: 'var(--secondary)' }}>
+        <div className="min-h-[100dvh] flex flex-col" style={{ background: 'var(--bg-primary)' }}>
           <Navbar />
           <main className="flex-1">
             <Routes>
